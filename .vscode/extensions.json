@@ -1,0 +1,11 @@
+{
+    "recommendations": [
+        "ms-python.black-formatter", // Formatter
+        "ms-python.flake8", // Linter
+        "ms-python.isort", // Formatter for imports
+        "ms-toolsai.jupyter", // Jupyter Notebook
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+    ]
+}
