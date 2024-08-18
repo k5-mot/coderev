@@ -43,17 +43,17 @@ flowchart TD
     GLS[(GitLab API\nA commit of MR)]
     GL1[Changed files\n- filepath\n- language\n- diff]
     GLE[(GitLab API\nComment code summary & review into MR)]
-    COMMENT(Union)
+    CSR[Code Summaries and Reviews]
 
     GLS-->|GET| GL1
 
     GL1-->|Context| CSC
     GL1-->|Context| CRC
 
-    CSC--> COMMENT
-    CRC--> COMMENT
+    CSC-->|Union| CSR
+    CRC-->|Union| CSR
 
-    COMMENT-->|POST| GLE
+    CSR-->|POST| GLE
 
 subgraph CSC[Code Summary Chain]
     direction TB
@@ -96,6 +96,10 @@ python -m isort  coderev examples test
 deactivate
 Remove-Item –path ./.venv –recurse
 ```
+
+- GitLab
+  - `GITLAB_PERSONAL_ACCESS_TOKEN`を発行し、各プロジェクトのCI/CD Variablesに設定する。
+  - `OLLAMA_URL`も設定すること
 
 ## TODO
 
