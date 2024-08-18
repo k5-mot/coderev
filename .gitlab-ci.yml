@@ -1,0 +1,91 @@
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  OLLAMA_URL: "http://192.168.11.13:30101"
+
+cache:
+  paths:
+    - .venv/
+    - .cache/pip
+
+stages:
+  - debug
+  - check
+  - review
+
+# 定義済み変数を表示
+Print_DebugMessage:
+  image: alpine:latest
+  stage: debug
+  allow_failure: true
+  script:
+    - |
+      echo "GITLAB_PERSONAL_ACCESS_TOKEN: ${GITLAB_PERSONAL_ACCESS_TOKEN}"
+      echo "CI_SERVER_URL: ${CI_SERVER_URL}"
+      echo "CI_API_V4_URL: ${CI_API_V4_URL}"
+      echo "CI_PROJECT_ID: ${CI_PROJECT_ID}"
+      echo "CI_PROJECT_URL: ${CI_PROJECT_URL}"
+      echo "CI_COMMIT_REF_NAME: ${CI_COMMIT_REF_NAME}"
+      echo "CI_PIPELINE_SOURCE: ${CI_PIPELINE_SOURCE}"
+      echo "CI_MERGE_REQUEST_STATE: ${CI_MERGE_REQUEST_STATE}"
+      echo "CI_MERGE_REQUEST_PROJECT_URL: ${CI_MERGE_REQUEST_PROJECT_URL}"
+      echo "CI_MERGE_REQUEST_IID: ${CI_MERGE_REQUEST_IID}"
+
+Check_Gitlab:
+  image: ubuntu:latest
+  stage: check
+  allow_failure: false
+  script:
+    - apt-get update
+    - apt-get install -y curl jq
+    - |
+      # Check if connects GitLab
+      curl --retry 2 --max-time 2 ${CI_SERVER_URL}
+
+Review_MergeRequest:
+  image: python:3.12.5
+  stage: review
+  allow_failure: true
+  artifacts:
+    paths:
+      - ./logs/*
+  script:
+    - |
+      pip install --upgrade pip
+      pip install --upgrade setuptools
+      pip install virtualenv
+      virtualenv .venv
+      source .venv/bin/activate
+      pip install flake8 black isort python-dotenv unidiff PyGithub python-gitlab openai ollama langchain langchain-core langchain-community faiss-cpu
+    - python ./main.py
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_STATE == "opened"'
+
+Review_CommitOfMR:
+  image: python:3.12.5
+  stage: review
+  allow_failure: true
+  artifacts:
+    paths:
+      - ./logs/*
+  script:
+    - |
+      apt-get update
+      apt-get install -y curl jq
+
+      # Get the lists of merge requests
+      export MR_LISTS=$(curl --header "PRIVATE-TOKEN: $GITLAB_PERSONAL_ACCESS_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests?source_branch=$CI_COMMIT_REF_NAME&order_by=updated_at&sort=desc")
+
+      # Check if exists merge requests
+      export MR_COUNT=$(echo $MR_LISTS | jq '. | length')
+      if [ "$MR_COUNT" -eq 0 ]; then
+        echo "No merge request exists for branch $CI_COMMIT_REF_NAME"
+        exit 1
+      fi
+    - |
+      pip install --upgrade pip
+      pip install --upgrade setuptools
+      pip install virtualenv
+      virtualenv .venv
+      source .venv/bin/activate
+      pip install flake8 black isort python-dotenv unidiff PyGithub python-gitlab openai ollama langchain langchain-core langchain-community faiss-cpu
+    - python ./main.py

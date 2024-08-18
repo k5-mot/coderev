@@ -9,13 +9,10 @@ from gitlab import Gitlab
 from langchain_core.document_loaders import BaseLoader
 from langchain_core.documents import Document
 
-from langchain_motex.utils.gitlab_utils import (
-    get_documents_merge_request,
-    get_gitlab_client,
-)
+from langchain_motex.utils.gitlab_utils import get_documents_commit, get_gitlab_client
 
 
-class GitlabMergeRequestLoader(BaseLoader):
+class GitlabCommitLoader(BaseLoader):
     gitlab_client: Gitlab
     project_id: int
     merge_request_iid: int
@@ -25,15 +22,17 @@ class GitlabMergeRequestLoader(BaseLoader):
         gitlab_client: Gitlab,
         project_id: int,
         merge_request_iid: int,
+        commit_sha: str,
     ):
         self.gitlab_client = gitlab_client
         self.project_id = project_id
         self.merge_request_iid = merge_request_iid
+        self.commit_sha = commit_sha
 
     def lazy_load(self) -> Iterator[Document]:
         """Load and return documents from the JSON file."""
-        docs = get_documents_merge_request(
-            self.gitlab_client, self.project_id, self.merge_request_iid
+        docs = get_documents_commit(
+            self.gitlab_client, self.project_id, self.merge_request_iid, self.commit_sha
         )
         for doc in docs:
             yield doc
@@ -44,7 +43,9 @@ if __name__ == "__main__":
         load_dotenv()
 
     (gitlab_client, project_id, merge_request_iid, commit_sha) = get_gitlab_client()
-    docs_loader = GitlabMergeRequestLoader(gitlab_client, project_id, merge_request_iid)
+    docs_loader = GitlabCommitLoader(
+        gitlab_client, project_id, merge_request_iid, commit_sha
+    )
     docs = docs_loader.load()
 
     for doc in docs:
