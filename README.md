@@ -1,5 +1,14 @@
 # Code Reviewer on GitLab CI
 
+## 概要図
+
+### MR Code Review Chain
+```mermaid
+```
+### MR Code Summary Chain
+### MR Summary Chain
+
+
 ## セットアップ
 
 - Python 3.12.5 on Windows11
@@ -29,6 +38,6 @@ Remove-Item –path ./.venv –recurse
 
 ## TODO
 
+- GitLab CIに、対応させたい
 - GitHub Actionsに、対応させたい
-- blackとflake8に対応させたい
 - 作成したやつをpydanticに対応させたい
