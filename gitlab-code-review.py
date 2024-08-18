@@ -84,7 +84,7 @@ prompt_mr_review = PromptTemplate(
 )
 
 # LLM
-OLLAMA_URL = "http://192.168.11.13:30101"
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 llm_chat = ChatOllama(model="deepseek-coder-v2:16b", base_url=OLLAMA_URL)
 llm_code = ChatOllama(model="llama3.1:8b", base_url=OLLAMA_URL)
 llm = Ollama(model="llama3.1:8b", base_url=OLLAMA_URL)
