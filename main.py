@@ -22,7 +22,9 @@ from langchain_motex.utils.gitlab_utils import (
     get_gitlab_client,
 )
 
-# Initialize
+# ----------------------------
+# Initialization
+# ----------------------------
 set_debug(False)
 if os.path.isfile(".env"):
     load_dotenv()
@@ -37,11 +39,6 @@ else:
 TEMPLATE_CODE_SUMMARY = """あなたは優秀なプログラマーです。
 以下に示すコードの差分を元に、簡単に要約してください。
 要約は、レビュー担当者がこの変更で何が行われたかをより迅速かつ簡単に理解できるような文章にしてください。
-
-要約は、完全に客観的なものに限定し、意見や提案は含みません。
-要約の例は次の通りです。:
-```このdiffには関数`create_database`,`delete_database`に変更があり、
-これらの関数にパラメータ`force`が追加されています。```
 
 ファイル{name}のコードの差分は、次の通りです。:
 ```{language}
@@ -163,6 +160,11 @@ chain_mr_review = (
 )
 doc_summarized.metadata["summary"] = chain_mr_review.invoke(doc_summarized).content
 print(doc_summarized.metadata["summary"])
+
+# ----------------------------
+# Output Parser
+# ----------------------------
+# TODO: Output Parserを導入して、マージリクエストの種別を取得したい
 
 # ----------------------------
 # Feedback to GitLab
